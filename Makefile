@@ -1,9 +1,11 @@
 CC=gcc
-C_FLAGS=-Wall
-LD_LIBRARY=-lrdmacm -libverbs
+CXX_FLAGS=-g -O2
+C_FLAGS=-g -O2
+LD_LIBRARY=-libverbs
+SRC=service.c
 
-client:client.c
-	$(CC) $(C_FLAGS) client.c $(LD_LIBRARY)
-
-server:server.c
-	$(CC) $(C_FLAGS) server.c $(LD_LIBRARY)
+service: service.c
+	$(CC) $(SRC) -o service $(C_FLAGS) $(LD_LIBRARY)
+clean:
+	rm -rf ./*.o
+	rm -rf ./service
