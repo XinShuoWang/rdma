@@ -57,3 +57,9 @@ class RdmaServer {
     }
   }
 };
+
+int main(){
+  RdmaServer server;
+  server.spin();
+  return 0;
+}
