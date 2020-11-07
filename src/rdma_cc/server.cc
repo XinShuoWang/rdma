@@ -14,8 +14,8 @@ class RdmaServer {
  private:
   resources resources_;
   config_t config_ = {
-      nullptr,  /* dev_name */
-      nullptr,  /* server_name */
+      NULL,  /* dev_name */
+      NULL,  /* server_name */
       19875, /* tcp_port */
       1,       /* ib_port */
       -1 /* gid_idx */
