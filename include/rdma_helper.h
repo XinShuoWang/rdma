@@ -24,7 +24,7 @@
 * Description
 * Print out config information
 ******************************************************************************/
-static void print_config(struct config_t* config) {
+static void print_config(struct config_t *config) {
   fprintf(stdout, " ------------------------------------------------\n");
   fprintf(stdout, " Device name : \"%s\"\n", config->dev_name);
   fprintf(stdout, " IB port : %u\n", config->ib_port);

@@ -7,6 +7,7 @@
 
 #include "rdma_structure.h"
 #include "rdma_socket.h"
+#include "rdma_predefine.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +33,6 @@ static void resources_init(struct resources *res) {
   res->sock = -1;
 }
 
-
 /******************************************************************************
 * Function: resources_create
 *
@@ -50,7 +50,7 @@ static void resources_init(struct resources *res) {
 * This function creates and allocates all necessary system resources. These
 * are stored in res.
 *****************************************************************************/
-static int resources_create(struct resources *res, struct config_t* config) {
+static int resources_create(struct resources *res, struct config_t *config) {
   struct ibv_device **dev_list = NULL;
   struct ibv_qp_init_attr qp_init_attr;
   struct ibv_device *ib_dev = NULL;

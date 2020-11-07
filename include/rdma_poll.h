@@ -105,7 +105,7 @@ static int post_send(struct resources *res, int opcode) {
   sr.wr_id = 0;
   sr.sg_list = &sge;
   sr.num_sge = 1;
-  sr.opcode = opcode;
+  sr.opcode = static_cast<ibv_wr_opcode>(opcode);
   sr.send_flags = IBV_SEND_SIGNALED;
   if (opcode != IBV_WR_SEND) {
     sr.wr.rdma.remote_addr = res->remote_props.addr;
