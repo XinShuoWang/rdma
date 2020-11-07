@@ -27,47 +27,20 @@ libverbs RDMA_RC_example.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <inttypes.h>
-
-#include <sys/time.h>
-#include <arpa/inet.h>
 #include <infiniband/verbs.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 struct config_t config = {
     NULL,  /* dev_name */
-    NULL,  /* server_name */
+    "10.11.6.132",  /* server_name */
     19875, /* tcp_port */
     1,       /* ib_port */
     -1 /* gid_idx */
 };
 
-/******************************************************************************
-* Function: main
-*
-* Input
-* argc number of items in argv
-* argv command line parameters
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, 1 on failure
-*
-* Description
-* Main program code
-******************************************************************************/
-int main(int argc, char *argv[]) {
+int main() {
   struct resources res;
   int rc = 1;
   char temp_char;
-
-  config.server_name = "10.11.6.132";
-  config.tcp_port = 19875;
 
   printf("servername=%s\n", config.server_name);
   /* print the used parameters for info*/
@@ -114,10 +87,12 @@ int main(int argc, char *argv[]) {
     rc = 1;
     goto main_exit;
   }
-  fprintf(stdout, "Contents of server's buffer: '%s'\n", res.buf);
 
+
+  fprintf(stdout, "Contents of server's buffer: '%s'\n", res.buf);
   /* Now we replace what's in the server's buffer */
   strcpy(res.buf, RDMAMSGW);
+
 
   fprintf(stdout, "Now replacing it with: '%s'\n", res.buf);
   if (post_send(&res, IBV_WR_RDMA_WRITE)) {

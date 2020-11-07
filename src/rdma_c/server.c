@@ -31,23 +31,7 @@ struct config_t config = {
     -1 /* gid_idx */
 };
 
-/******************************************************************************
-* Function: main
-*
-* Input
-* argc number of items in argv
-* argv command line parameters
-*
-* Output
-* none
-*
-* Returns
-* 0 on success, 1 on failure
-*
-* Description
-* Main program code
-******************************************************************************/
-int main(int argc, char *argv[]) {
+int main() {
   struct resources res;
   int rc = 1;
   char temp_char;
