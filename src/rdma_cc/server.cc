@@ -20,6 +20,7 @@ class RdmaServer {
       1,       /* ib_port */
       -1 /* gid_idx */
   };
+
   bool have_killed;
  public:
   RdmaServer() {
