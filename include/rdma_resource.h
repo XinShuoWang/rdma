@@ -9,8 +9,8 @@
 #include "rdma_socket.h"
 #include "rdma_predefine.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 
 /******************************************************************************
@@ -51,9 +51,9 @@ static void resources_init(struct resources *res) {
 * are stored in res.
 *****************************************************************************/
 static int resources_create(struct resources *res, struct config_t *config) {
-  struct ibv_device **dev_list = NULL;
-  struct ibv_qp_init_attr qp_init_attr;
-  struct ibv_device *ib_dev = NULL;
+  ibv_device **dev_list = nullptr;
+  ibv_qp_init_attr qp_init_attr{};
+  ibv_device *ib_dev = nullptr;
   size_t size;
   int i;
   int mr_flags = 0;
@@ -71,7 +71,7 @@ static int resources_create(struct resources *res, struct config_t *config) {
     }
   } else {
     fprintf(stdout, "waiting on port %d for TCP connection\n", config->tcp_port);
-    res->sock = sock_connect(NULL, config->tcp_port);
+    res->sock = sock_connect(nullptr, config->tcp_port);
     if (res->sock < 0) {
       fprintf(stderr, "failed to establish TCP connection with client on port %d\n",
               config->tcp_port);
@@ -122,8 +122,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
   }
   /* We are now done with device list, free it */
   ibv_free_device_list(dev_list);
-  dev_list = NULL;
-  ib_dev = NULL;
+  dev_list = nullptr;
+  ib_dev = nullptr;
   /* query port properties */
   if (ibv_query_port(res->ib_ctx, config->ib_port,
                      &res->port_attr)) {
@@ -140,14 +140,15 @@ static int resources_create(struct resources *res, struct config_t *config) {
   }
   /* each side will send only one WR, so Completion Queue with 1 entry is enough */
   cq_size = 1;
-  res->cq = ibv_create_cq(res->ib_ctx, cq_size, NULL, NULL, 0);
+  res->cq = ibv_create_cq(res->ib_ctx, cq_size, nullptr,
+                          nullptr, 0);
   if (!res->cq) {
     fprintf(stderr, "failed to create CQ with %u entries\n", cq_size);
     rc = 1;
     goto resources_create_exit;
   }
   /* allocate the memory buffer that will hold the data */
-  size = MSG_SIZE;
+  size = kMemSize;
   res->buf = (char *) malloc(size);
   if (!res->buf) {
     fprintf(stderr, "failed to malloc %zu bytes to memory buffer\n", size);
@@ -157,7 +158,7 @@ static int resources_create(struct resources *res, struct config_t *config) {
   memset(res->buf, 0, size);
   /* only in the server side put the message in the memory buffer */
   if (!config->server_name) {
-    strcpy(res->buf, MSG);
+    strcpy(res->buf, msg);
     fprintf(stdout, "going to send the message: '%s'\n", res->buf);
   } else
     memset(res->buf, 0, size);
@@ -193,31 +194,31 @@ static int resources_create(struct resources *res, struct config_t *config) {
     /* Error encountered, cleanup */
     if (res->qp) {
       ibv_destroy_qp(res->qp);
-      res->qp = NULL;
+      res->qp = nullptr;
     }
     if (res->mr) {
       ibv_dereg_mr(res->mr);
-      res->mr = NULL;
+      res->mr = nullptr;
     }
     if (res->buf) {
       free(res->buf);
-      res->buf = NULL;
+      res->buf = nullptr;
     }
     if (res->cq) {
       ibv_destroy_cq(res->cq);
-      res->cq = NULL;
+      res->cq = nullptr;
     }
     if (res->pd) {
       ibv_dealloc_pd(res->pd);
-      res->pd = NULL;
+      res->pd = nullptr;
     }
     if (res->ib_ctx) {
       ibv_close_device(res->ib_ctx);
-      res->ib_ctx = NULL;
+      res->ib_ctx = nullptr;
     }
     if (dev_list) {
       ibv_free_device_list(dev_list);
-      dev_list = NULL;
+      dev_list = nullptr;
     }
     if (res->sock >= 0) {
       if (close(res->sock))

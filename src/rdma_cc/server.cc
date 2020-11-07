@@ -12,10 +12,10 @@
 
 class RdmaServer {
  private:
-  resources resources_;
+  resources resources_{};
   config_t config_ = {
-      NULL,  /* dev_name */
-      NULL,  /* server_name */
+      nullptr,  /* dev_name */
+      nullptr,  /* server_name */
       19875, /* tcp_port */
       1,       /* ib_port */
       -1 /* gid_idx */
@@ -35,7 +35,7 @@ class RdmaServer {
     sock_sync_data(resources_.sock, 1, "W", &temp_char);
   }
 
-  void spin() {
+  [[noreturn]] void spin() {
     while (true) {
       std::this_thread::sleep_for(std::chrono::minutes(1));
     }

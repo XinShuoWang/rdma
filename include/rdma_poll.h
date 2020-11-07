@@ -8,12 +8,12 @@
 #include "rdma_predefine.h"
 #include "rdma_structure.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <cstdint>
+#include <cinttypes>
 
 #include <sys/time.h>
 #include <arpa/inet.h>
@@ -39,20 +39,20 @@
 *
 ******************************************************************************/
 static int poll_completion(struct resources *res) {
-  struct ibv_wc wc;
+  ibv_wc wc{};
   unsigned long start_time_msec;
   unsigned long cur_time_msec;
-  struct timeval cur_time;
+  timeval cur_time{};
   int poll_result;
   int rc = 0;
   /* poll the completion for a while before giving up of doing it .. */
-  gettimeofday(&cur_time, NULL);
+  gettimeofday(&cur_time, nullptr);
   start_time_msec = (cur_time.tv_sec * 1000) + (cur_time.tv_usec / 1000);
   do {
     poll_result = ibv_poll_cq(res->cq, 1, &wc);
-    gettimeofday(&cur_time, NULL);
+    gettimeofday(&cur_time, nullptr);
     cur_time_msec = (cur_time.tv_sec * 1000) + (cur_time.tv_usec / 1000);
-  } while ((poll_result == 0) && ((cur_time_msec - start_time_msec) < MAX_POLL_CQ_TIMEOUT));
+  } while ((poll_result == 0) && ((cur_time_msec - start_time_msec) < kMaxPollCqTimeout));
   if (poll_result < 0) {
     /* poll CQ failed */
     fprintf(stderr, "poll CQ failed\n");
@@ -90,18 +90,18 @@ static int poll_completion(struct resources *res) {
 * This function will create and post a send work request
 ******************************************************************************/
 static int post_send(struct resources *res, int opcode) {
-  struct ibv_send_wr sr;
-  struct ibv_sge sge;
-  struct ibv_send_wr *bad_wr = NULL;
+  ibv_send_wr sr{};
+  ibv_sge sge{};
+  struct ibv_send_wr *bad_wr = nullptr;
   int rc;
   /* prepare the scatter/gather entry */
   memset(&sge, 0, sizeof(sge));
   sge.addr = (uintptr_t) res->buf;
-  sge.length = MSG_SIZE;
+  sge.length = kMemSize;
   sge.lkey = res->mr->lkey;
   /* prepare the send work request */
   memset(&sr, 0, sizeof(sr));
-  sr.next = NULL;
+  sr.next = nullptr;
   sr.wr_id = 0;
   sr.sg_list = &sge;
   sr.num_sge = 1;
@@ -146,18 +146,18 @@ static int post_send(struct resources *res, int opcode) {
 *
 ******************************************************************************/
 static int post_receive(struct resources *res) {
-  struct ibv_recv_wr rr;
-  struct ibv_sge sge;
+  ibv_recv_wr rr{};
+  ibv_sge sge{};
   struct ibv_recv_wr *bad_wr;
   int rc;
   /* prepare the scatter/gather entry */
   memset(&sge, 0, sizeof(sge));
   sge.addr = (uintptr_t) res->buf;
-  sge.length = MSG_SIZE;
+  sge.length = kMemSize;
   sge.lkey = res->mr->lkey;
   /* prepare the receive work request */
   memset(&rr, 0, sizeof(rr));
-  rr.next = NULL;
+  rr.next = nullptr;
   rr.wr_id = 0;
   rr.sg_list = &sge;
   rr.num_sge = 1;

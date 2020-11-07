@@ -10,12 +10,12 @@
 #include "rdma_socket.h"
 #include "rdma_poll.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <cstdint>
+#include <cinttypes>
 
 #include <sys/time.h>
 #include <arpa/inet.h>
@@ -39,7 +39,7 @@
 * Transition a QP from the RESET to INIT state
 ******************************************************************************/
 static int modify_qp_to_init(struct ibv_qp *qp, struct config_t *config) {
-  struct ibv_qp_attr attr;
+  ibv_qp_attr attr{};
   int flags;
   int rc;
   memset(&attr, 0, sizeof(attr));
@@ -74,7 +74,7 @@ static int modify_qp_to_init(struct ibv_qp *qp, struct config_t *config) {
 ******************************************************************************/
 static int modify_qp_to_rtr(struct ibv_qp *qp, uint32_t remote_qpn,
                             uint16_t dlid, uint8_t *dgid, struct config_t *config) {
-  struct ibv_qp_attr attr;
+  ibv_qp_attr attr{};
   int flags;
   int rc;
   memset(&attr, 0, sizeof(attr));
@@ -122,7 +122,7 @@ static int modify_qp_to_rtr(struct ibv_qp *qp, uint32_t remote_qpn,
 * Transition a QP from the RTR to RTS state
 ******************************************************************************/
 static int modify_qp_to_rts(struct ibv_qp *qp) {
-  struct ibv_qp_attr attr;
+  ibv_qp_attr attr{};
   int flags;
   int rc;
   memset(&attr, 0, sizeof(attr));
@@ -156,12 +156,12 @@ static int modify_qp_to_rts(struct ibv_qp *qp) {
 * Connect the QP. Transition the server side to RTR, sender side to RTS
 ******************************************************************************/
 static int connect_qp(struct resources *res, struct config_t *config) {
-  struct cm_con_data_t local_con_data;
-  struct cm_con_data_t remote_con_data;
-  struct cm_con_data_t tmp_con_data;
+  cm_con_data_t local_con_data{};
+  cm_con_data_t remote_con_data{};
+  cm_con_data_t tmp_con_data{};
   int rc = 0;
   char temp_char;
-  union ibv_gid my_gid;
+  ibv_gid my_gid{};
   if (config->gid_idx >= 0) {
     rc = ibv_query_gid(res->ib_ctx, config->ib_port, config->gid_idx, &my_gid);
     if (rc) {
@@ -202,13 +202,13 @@ static int connect_qp(struct resources *res, struct config_t *config) {
             "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ", p[0],
             p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
   }
-/* modify the QP to init */
+  /* modify the QP to init */
   rc = modify_qp_to_init(res->qp, config);
   if (rc) {
     fprintf(stderr, "change QP state to INIT failed\n");
     goto connect_qp_exit;
   }
-/* let the client post RR to be prepared for incoming messages */
+  /* let the client post RR to be prepared for incoming messages */
   if (config->server_name) {
     rc = post_receive(res);
     if (rc) {
@@ -216,7 +216,7 @@ static int connect_qp(struct resources *res, struct config_t *config) {
       goto connect_qp_exit;
     }
   }
-/* modify the QP to RTR */
+  /* modify the QP to RTR */
   rc = modify_qp_to_rtr(res->qp, remote_con_data.qp_num,
                         remote_con_data.lid, remote_con_data.gid, config);
   if (rc) {
@@ -229,7 +229,7 @@ static int connect_qp(struct resources *res, struct config_t *config) {
     goto connect_qp_exit;
   }
   fprintf(stdout, "QP state was change to RTS\n");
-/* sync to make sure that both sides are in states that they can connect to prevent packet loose */
+  /* sync to make sure that both sides are in states that they can connect to prevent packet loose */
   if (sock_sync_data(res->sock, 1, "Q", &temp_char)) /* just send a dummy char back and forth */
   {
     fprintf(stderr, "sync error after QPs are were moved to RTS\n");

@@ -5,12 +5,12 @@
 #ifndef RDMA_TEST_INCLUDE_RDMA_SOCKET_H_
 #define RDMA_TEST_INCLUDE_RDMA_SOCKET_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <cstdint>
+#include <cinttypes>
 
 #include <sys/time.h>
 #include <arpa/inet.h>
@@ -38,7 +38,7 @@
 *
 ******************************************************************************/
 static int sock_connect(const char *servername, int port) {
-  struct addrinfo *resolved_addr = NULL;
+  struct addrinfo *resolved_addr = nullptr;
   struct addrinfo *iterator;
   char service[6];
   int sockfd = -1;
@@ -75,7 +75,7 @@ static int sock_connect(const char *servername, int port) {
         if (bind(listenfd, iterator->ai_addr, iterator->ai_addrlen))
           goto sock_connect_exit;
         listen(listenfd, 1);
-        sockfd = accept(listenfd, NULL, 0);
+        sockfd = accept(listenfd, nullptr, nullptr);
       }
     }
   }

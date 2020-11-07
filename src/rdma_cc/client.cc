@@ -14,14 +14,14 @@ class RdmaClient {
  private:
   resources resources_{};
   config_t config_{
-      NULL,  /* dev_name */
-      NULL,  /* server_name */
+      nullptr,  /* dev_name */
+      nullptr,  /* server_name */
       19875, /* tcp_port */
       1,       /* ib_port */
       -1 /* gid_idx */
   };
  public:
-  RdmaClient(const std::string &ip) {
+  explicit RdmaClient(const std::string &ip) {
     // set ip
     config_.server_name = const_cast<char *>(ip.c_str());
     // init
@@ -35,7 +35,7 @@ class RdmaClient {
     poll_completion(&resources_);
   }
 
-  void copy(uint64_t pos, const char *data, uint64_t size) {
+  void copy(uint64_t pos, const char *data, uint64_t size) const {
     memcpy(resources_.buf + pos, data, size);
   }
 

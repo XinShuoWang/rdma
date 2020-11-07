@@ -5,15 +5,12 @@
 #ifndef RDMA_TEST_INCLUDE_RDMA_PREDEFINE_H_
 #define RDMA_TEST_INCLUDE_RDMA_PREDEFINE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <byteswap.h>
 
-#define MAX_POLL_CQ_TIMEOUT 2000
-
-#define MSG "SEND operation "
-#define RDMAMSGR "RDMA read operation "
-#define RDMAMSGW "RDMA write operation"
-#define MSG_SIZE (1 * 1024)
+const char msg[] = "";
+const uint64_t kMaxPollCqTimeout = 2000;
+const uint64_t kMemSize = 1 * 1024 * 1024 * 1024;
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 static inline uint64_t htonll(uint64_t x) { return bswap_64(x); }

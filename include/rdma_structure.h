@@ -5,7 +5,7 @@
 #ifndef RDMA_TEST_INCLUDE_RDMA_STRUCTURE_H_
 #define RDMA_TEST_INCLUDE_RDMA_STRUCTURE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <sys/types.h>
 #include <infiniband/verbs.h>
 
