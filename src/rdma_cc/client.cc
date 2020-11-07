@@ -35,8 +35,8 @@ class RdmaClient {
     poll_completion(&resources_);
   }
 
-  void copy(char *data, uint64_t size) {
-    memcpy(resources_.buf, data, size);
+  void copy(uint64_t pos, const char *data, uint64_t size) {
+    memcpy(resources_.buf + pos, data, size);
   }
 
   ~RdmaClient() {
@@ -53,4 +53,7 @@ class RdmaClient {
 int main() {
   std::string ip = "10.11.6.132";
   RdmaClient client(ip);
+  std::string data = "123543252345342523454325234543252345325";
+  client.copy(0, data.c_str(), data.size());
+  client.copy( data.size(), data.c_str(), data.size());
 }
