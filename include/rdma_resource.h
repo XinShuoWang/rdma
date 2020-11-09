@@ -60,8 +60,10 @@ static int resources_create(struct resources *res, struct config_t *config) {
   int cq_size = 0;
   int num_devices;
   int rc = 0;
-  /* if client side */
+
+  // TODO：GET SOCKET
   if (config->server_name) {
+    /* if client side */
     res->sock = sock_connect(config->server_name, config->tcp_port);
     if (res->sock < 0) {
       fprintf(stderr, "failed to establish TCP connection to server %s, port %d\n",
@@ -70,6 +72,7 @@ static int resources_create(struct resources *res, struct config_t *config) {
       goto resources_create_exit;
     }
   } else {
+    /* if server side */
     fprintf(stdout, "waiting on port %d for TCP connection\n", config->tcp_port);
     res->sock = sock_connect(nullptr, config->tcp_port);
     if (res->sock < 0) {
@@ -81,6 +84,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
   }
   fprintf(stdout, "TCP connection was established\n");
   fprintf(stdout, "searching for IB devices in host\n");
+
+  // TODO：GET IB DEVICES
   /* get device names in the system */
   dev_list = ibv_get_device_list(&num_devices);
   if (!dev_list) {
@@ -113,6 +118,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
     rc = 1;
     goto resources_create_exit;
   }
+
+  // TODO：GET IB CONTEXT
   /* get device handle */
   res->ib_ctx = ibv_open_device(ib_dev);
   if (!res->ib_ctx) {
@@ -124,6 +131,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
   ibv_free_device_list(dev_list);
   dev_list = nullptr;
   ib_dev = nullptr;
+
+  // TODO：QUERY PROPERTIES
   /* query port properties */
   if (ibv_query_port(res->ib_ctx, config->ib_port,
                      &res->port_attr)) {
@@ -131,6 +140,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
     rc = 1;
     goto resources_create_exit;
   }
+
+  // TODO：ALLOCATION PROTECTION DOMAIN
   /* allocate Protection Domain */
   res->pd = ibv_alloc_pd(res->ib_ctx);
   if (!res->pd) {
@@ -138,6 +149,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
     rc = 1;
     goto resources_create_exit;
   }
+
+  // TODO：SET CQ SIZE
   /* each side will send only one WR, so Completion Queue with 1 entry is enough */
   cq_size = 1;
   res->cq = ibv_create_cq(res->ib_ctx, cq_size, nullptr,
@@ -147,6 +160,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
     rc = 1;
     goto resources_create_exit;
   }
+
+  // TODO：ALLOCATE MEM BUFFER
   /* allocate the memory buffer that will hold the data */
   size = kMemSize;
   res->buf = (char *) malloc(size);
@@ -162,6 +177,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
     fprintf(stdout, "going to send the message: '%s'\n", res->buf);
   } else
     memset(res->buf, 0, size);
+
+  // TODO ： REGISTER MEM BUFFER
   /* register the memory buffer */
   mr_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
   res->mr = ibv_reg_mr(res->pd, res->buf, size, mr_flags);
@@ -172,6 +189,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
   }
   fprintf(stdout, "MR was registered with addr=%p, lkey=0x%x, rkey=0x%x, flags=0x%x\n",
           res->buf, res->mr->lkey, res->mr->rkey, mr_flags);
+
+  // TODO： CREATE QP
   /* create the Queue Pair */
   memset(&qp_init_attr, 0, sizeof(qp_init_attr));
   qp_init_attr.qp_type = IBV_QPT_RC;
@@ -189,6 +208,8 @@ static int resources_create(struct resources *res, struct config_t *config) {
     goto resources_create_exit;
   }
   fprintf(stdout, "QP was created, QP number=0x%x\n", res->qp->qp_num);
+
+
   resources_create_exit:
   if (rc) {
     /* Error encountered, cleanup */

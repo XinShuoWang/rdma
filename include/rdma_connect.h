@@ -42,12 +42,14 @@ static int modify_qp_to_init(struct ibv_qp *qp, struct config_t *config) {
   ibv_qp_attr attr{};
   int flags;
   int rc;
+
   memset(&attr, 0, sizeof(attr));
   attr.qp_state = IBV_QPS_INIT;
   attr.port_num = config->ib_port;
   attr.pkey_index = 0;
   attr.qp_access_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
   flags = IBV_QP_STATE | IBV_QP_PKEY_INDEX | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS;
+
   rc = ibv_modify_qp(qp, &attr, flags);
   if (rc)
     fprintf(stderr, "failed to modify QP state to INIT\n");
@@ -162,6 +164,8 @@ static int connect_qp(struct resources *res, struct config_t *config) {
   int rc = 0;
   char temp_char;
   ibv_gid my_gid{};
+
+  // TODO: GET GID
   if (config->gid_idx >= 0) {
     rc = ibv_query_gid(res->ib_ctx, config->ib_port, config->gid_idx, &my_gid);
     if (rc) {
@@ -171,24 +175,33 @@ static int connect_qp(struct resources *res, struct config_t *config) {
     }
   } else
     memset(&my_gid, 0, sizeof my_gid);
-/* exchange using TCP sockets info required to connect QPs */
+
+
+  /* exchange using TCP sockets info required to connect QPs */
   local_con_data.addr = htonll((uintptr_t) res->buf);
   local_con_data.rkey = htonl(res->mr->rkey);
   local_con_data.qp_num = htonl(res->qp->qp_num);
   local_con_data.lid = htons(res->port_attr.lid);
   memcpy(local_con_data.gid, &my_gid, 16);
   fprintf(stdout, "\nLocal LID = 0x%x\n", res->port_attr.lid);
-  if (sock_sync_data(res->sock, sizeof(struct cm_con_data_t), (char *) &local_con_data, (char *) &tmp_con_data) < 0) {
+
+  // TODO: SYNC DATA
+  if (sock_sync_data(res->sock, sizeof(struct cm_con_data_t),
+                     (char *) &local_con_data, (char *) &tmp_con_data) < 0) {
     fprintf(stderr, "failed to exchange connection data between sides\n");
     rc = 1;
     goto connect_qp_exit;
   }
+
+  // convert return data-structure into resources_
   remote_con_data.addr = ntohll(tmp_con_data.addr);
   remote_con_data.rkey = ntohl(tmp_con_data.rkey);
   remote_con_data.qp_num = ntohl(tmp_con_data.qp_num);
   remote_con_data.lid = ntohs(tmp_con_data.lid);
   memcpy(remote_con_data.gid, tmp_con_data.gid, 16);
-/* save the remote side attributes, we will need it for the post SR */
+
+  // TODO:SET REMOTE PROPS
+  /* save the remote side attributes, we will need it for the post SR */
   res->remote_props = remote_con_data;
   fprintf(stdout, "Remote address = 0x%"
                   PRIx64
@@ -199,9 +212,13 @@ static int connect_qp(struct resources *res, struct config_t *config) {
   if (config->gid_idx >= 0) {
     uint8_t *p = remote_con_data.gid;
     fprintf(stdout,
-            "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ", p[0],
-            p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
+            "Remote GID =%02x:%02x:%02x:%02x:%02x:%02x"
+            ":%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n ",
+            p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8],
+            p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
   }
+
+  // TODO:QP IS INIT
   /* modify the QP to init */
   rc = modify_qp_to_init(res->qp, config);
   if (rc) {
@@ -216,6 +233,8 @@ static int connect_qp(struct resources *res, struct config_t *config) {
       goto connect_qp_exit;
     }
   }
+
+  // TODO:QP IS RTR
   /* modify the QP to RTR */
   rc = modify_qp_to_rtr(res->qp, remote_con_data.qp_num,
                         remote_con_data.lid, remote_con_data.gid, config);
@@ -223,18 +242,22 @@ static int connect_qp(struct resources *res, struct config_t *config) {
     fprintf(stderr, "failed to modify QP state to RTR\n");
     goto connect_qp_exit;
   }
+
+  // TODO:QP READY TO RTS
   rc = modify_qp_to_rts(res->qp);
   if (rc) {
     fprintf(stderr, "failed to modify QP state to RTR\n");
     goto connect_qp_exit;
   }
   fprintf(stdout, "QP state was change to RTS\n");
-  /* sync to make sure that both sides are in states that they can connect to prevent packet loose */
-  if (sock_sync_data(res->sock, 1, "Q", &temp_char)) /* just send a dummy char back and forth */
-  {
+  /* sync to make sure that both sides are in states that
+   * they can connect to prevent packet loose */
+  /* just send a dummy char back and forth */
+  if (sock_sync_data(res->sock, 1, "Q", &temp_char)) {
     fprintf(stderr, "sync error after QPs are were moved to RTS\n");
     rc = 1;
   }
+
   connect_qp_exit:
   return rc;
 }

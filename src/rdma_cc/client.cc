@@ -27,10 +27,14 @@ class RdmaClient {
     // init
     char temp_char;
     resources_init(&resources_);
+    // 1 - 4， 7
     resources_create(&resources_, &config_);
+    // 5 - 6
     connect_qp(&resources_, &config_);
+    // waiting for complete
     poll_completion(&resources_);
     sock_sync_data(resources_.sock, 1, "R", &temp_char);
+    // 8
     post_send(&resources_, IBV_WR_RDMA_READ);
     poll_completion(&resources_);
   }
@@ -40,10 +44,10 @@ class RdmaClient {
   }
 
   ~RdmaClient() {
-    char temp_char;
-    post_send(&resources_, IBV_WR_RDMA_WRITE);
-    poll_completion(&resources_);
-    sock_sync_data(resources_.sock, 1, "W", &temp_char);
+//    char temp_char;
+//    post_send(&resources_, IBV_WR_RDMA_WRITE);
+//    poll_completion(&resources_);
+//    sock_sync_data(resources_.sock, 1, "W", &temp_char);
     resources_destroy(&resources_);
     if (config_.dev_name)
       free((char *) config_.dev_name);

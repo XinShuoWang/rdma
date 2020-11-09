@@ -36,19 +36,20 @@
 * initiated to the indicated server and port. Otherwise listen on the
 * indicated port for an incoming connection.
 *
+* if client mode : return socket contact with server
+* if server mode :  waiting incoming socket and return client socket descriptor
+*
 ******************************************************************************/
 static int sock_connect(const char *servername, int port) {
-  struct addrinfo *resolved_addr = nullptr;
-  struct addrinfo *iterator;
+  addrinfo *resolved_addr = nullptr;
   char service[6];
   int sockfd = -1;
   int listenfd = 0;
   int tmp;
-  struct addrinfo hints =
-      {
-          .ai_flags = AI_PASSIVE,
-          .ai_family = AF_INET,
-          .ai_socktype = SOCK_STREAM};
+  struct addrinfo hints = { .ai_flags = AI_PASSIVE,
+      .ai_family = AF_INET,
+       .ai_socktype = SOCK_STREAM
+      };
   if (sprintf(service, "%d", port) < 0)
     goto sock_connect_exit;
   /* Resolve DNS address, use sockfd as temp storage */
@@ -58,7 +59,7 @@ static int sock_connect(const char *servername, int port) {
     goto sock_connect_exit;
   }
   /* Search through results and find the one we want */
-  for (iterator = resolved_addr; iterator; iterator = iterator->ai_next) {
+  for (auto iterator = resolved_addr; iterator; iterator = iterator->ai_next) {
     sockfd = socket(iterator->ai_family, iterator->ai_socktype, iterator->ai_protocol);
     if (sockfd >= 0) {
       if (servername) {

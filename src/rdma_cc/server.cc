@@ -31,8 +31,8 @@ class RdmaServer {
     connect_qp(&resources_, &config_);
     post_send(&resources_, IBV_WR_SEND);
     poll_completion(&resources_);
-    sock_sync_data(resources_.sock, 1, "R", &temp_char);
-    sock_sync_data(resources_.sock, 1, "W", &temp_char);
+//    sock_sync_data(resources_.sock, 1, "R", &temp_char);
+//    sock_sync_data(resources_.sock, 1, "W", &temp_char);
   }
 
   [[noreturn]] void spin() {
